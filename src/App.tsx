@@ -38,6 +38,10 @@ export const App: React.FC = () => {
     }
   }, [selectedUser]);
 
+  useEffect(() => {
+    setSelectedPostId(0);
+  }, [selectedUser]);
+
   const selectUser = (person: User) => {
     const userFound = users.find(
       (user) => user.id === person.id,
@@ -81,7 +85,7 @@ export const App: React.FC = () => {
                 )}
                 {selectedUser
                 && posts.length === 0
-                && !loading && (
+                && !loading && !hasLoadingError && (
                   <NoPostsNotification />
                 )}
                 {!selectedUser && (

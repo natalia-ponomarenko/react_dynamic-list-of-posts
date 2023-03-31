@@ -18,6 +18,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
 
   useEffect(() => {
     setLoading(true);
+    setOpen(false);
     getPostComments(post.id)
       .then(data => setComments(data))
       .catch(
@@ -27,7 +28,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
         () => {
           setLoading(false);
           setTimeout(
-            () => setLoadingError(false), 3000,
+            () => setLoadingError(false), 10000,
           );
         },
       );
@@ -38,10 +39,13 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   };
 
   const deleteOldComment = (id: number) => {
+    setComments(
+      (prevComments) => prevComments.filter(
+        (comment) => comment.id !== id,
+      ),
+    );
     deleteComment(id)
-      .then(() => setComments(
-        (prevComments) => prevComments.filter((comment) => comment.id !== id),
-      ));
+      .catch(() => setLoadingError(true));
   };
 
   return (
@@ -58,66 +62,70 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
         </div>
 
         <div className="block">
-          {/* eslint-disable-next-line no-nested-ternary */
-            loading ? (
-              <Loader />
-            ) : (
-              comments.length > 0 ? (
-                <>
-                  <p className="title is-4">Comments:</p>
-                  <CommentsList
-                    comments={comments}
-                    onDelete={deleteOldComment}
-                  />
-                  {!isOpen ? (
-                    <button
-                      data-cy="WriteCommentButton"
-                      type="button"
-                      className="button is-link"
-                      onClick={() => setOpen(true)}
-                    >
-                      Write a comment
-                    </button>
+          {loading && (
+            <Loader />
+          )}
+          {hasLoadingError && (
+            <div className="notification is-danger" data-cy="CommentsError">
+              Something went wrong
+            </div>
+          )}
 
-                  ) : (
-                    <NewCommentForm
-                      postId={post.id}
-                      onAdd={addCommentLocally}
-                    />
-                  )}
-                </>
-              ) : (
-                <>
-                  <p className="title is-4" data-cy="NoCommentsMessage">
-                    No comments yet
-                  </p>
-                  {!isOpen ? (
-                    <button
-                      data-cy="WriteCommentButton"
-                      type="button"
-                      className="button is-link"
-                      onClick={() => setOpen(true)}
-                    >
-                      Write a comment
-                    </button>
-                  ) : (
-                    <NewCommentForm
-                      postId={post.id}
-                      onAdd={addCommentLocally}
-                    />
-                  )}
-                </>
-              )
-            )
-          }
+          {!loading
+            && !hasLoadingError
+            && comments.length > 0
+            && (
+              <>
+                <p className="title is-4">Comments:</p>
+                <CommentsList
+                  comments={comments}
+                  onDelete={deleteOldComment}
+                />
+                {!isOpen ? (
+                  <button
+                    data-cy="WriteCommentButton"
+                    type="button"
+                    className="button is-link"
+                    onClick={() => setOpen(true)}
+                  >
+                    Write a comment
+                  </button>
+                ) : (
+                  <NewCommentForm
+                    postId={post.id}
+                    onAdd={addCommentLocally}
+                  />
+                )}
+              </>
+            )}
+
+          {!loading
+            && !hasLoadingError
+            && comments.length === 0
+            && (
+              <>
+                <p className="title is-4" data-cy="NoCommentsMessage">
+                  No comments yet
+                </p>
+                {!isOpen ? (
+                  <button
+                    data-cy="WriteCommentButton"
+                    type="button"
+                    className="button is-link"
+                    onClick={() => setOpen(true)}
+                  >
+                    Write a comment
+                  </button>
+                ) : (
+                  <NewCommentForm
+                    postId={post.id}
+                    onAdd={addCommentLocally}
+                  />
+                )}
+              </>
+            )}
 
         </div>
-
-        {hasLoadingError && (
-          <div className="notification is-danger" data-cy="CommentsError">
-            Something went wrong
-          </div>
-        )}
       </div>
     </div>
   );

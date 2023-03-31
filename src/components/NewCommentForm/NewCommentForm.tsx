@@ -2,24 +2,19 @@ import classNames from 'classnames';
 import { useState } from 'react';
 import { Comment } from '../../types/Comment';
 import { Error } from '../../types/Error';
-import { DangerIcon } from '../DangerIcon';
 import { LoadingError } from '../LoadingError';
 import { addComment } from '../../api/posts';
+import { Input } from '../Input';
 
 type Props = {
   postId: number,
   onAdd: (comment: Comment) => void,
-  // loading: boolean,
-  // commentError: boolean,
-
 };
 
 export const NewCommentForm: React.FC<Props> = (
   {
     postId,
     onAdd,
-    // loading,
-    // commentError,
   },
 ) => {
   const [userName, setName] = useState('');
@@ -36,23 +31,22 @@ export const NewCommentForm: React.FC<Props> = (
   React.ChangeEvent<HTMLInputElement>
   | React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = event.target;
-    const trimmedValue = value.trim();
 
     switch (name) {
       case 'name':
         setNameError(Error.NONE);
-        setName(trimmedValue);
+        setName(value);
         break;
 
       case 'email':
         setEmailError(Error.NONE);
-        setEmail(trimmedValue);
+        setEmail(value);
 
         break;
 
       case 'body':
         setMessageError(Error.NONE);
-        setMessage(trimmedValue);
+        setMessage(value);
 
         break;
       default:
@@ -65,11 +59,11 @@ export const NewCommentForm: React.FC<Props> = (
       setNameError(Error.NAME);
     }
 
-    if (!email) {
+    if (!email.length) {
       setEmailError(Error.EMAIL);
     }
 
-    if (!message) {
+    if (!message.length) {
       setMessageError(Error.MESSAGE);
     }
 
@@ -91,7 +85,11 @@ export const NewCommentForm: React.FC<Props> = (
   const addNewComment = async () => {
     setCommentError(false);
 
-    if (userName === '' || email === '' || message === '') {
+    if (
+      userName.trim() === ''
+      || email.trim() === ''
+      || message.trim() === ''
+    ) {
       return;
     }
 
@@ -134,76 +132,31 @@ export const NewCommentForm: React.FC<Props> = (
       data-cy="NewCommentForm"
       onSubmit={(event) => handleSubmit(event)}
     >
-      <div className="field" data-cy="NameField">
-        <label className="label" htmlFor="comment-author-name">
-          Author Name
-        </label>
-
-        <div className="control has-icons-left has-icons-right">
-          <input
-            type="text"
-            name="name"
-            id="comment-author-name"
-            placeholder="Name Surname"
-            className={classNames('input', {
-              ' is-danger': nameError,
-            })}
-            value={userName}
-            onChange={(event) => handleChange(event)}
-          />
-
-          <span className="icon is-small is-left">
-            <i className="fas fa-user" />
-          </span>
-          {nameError && (
-            <DangerIcon />
-          )}
-        </div>
-        {nameError && (
-          <p className="help is-danger" data-cy="ErrorMessage">
-            Name is required
-          </p>
-        )}
-
-      </div>
-
-      <div className="field" data-cy="EmailField">
-        <label className="label" htmlFor="comment-author-email">
-          Author Email
-        </label>
-
-        <div className="control has-icons-left has-icons-right">
-          <input
-            type="text"
-            name="email"
-            id="comment-author-email"
-            placeholder="email@test.com"
-            className={classNames('input', {
-              ' is-danger': emailError !== '',
-            })}
-            value={email}
-            onChange={(event) => handleChange(event)}
-          />
-
-          <span className="icon is-small is-left">
-            <i className="fas fa-envelope" />
-          </span>
-          {emailError && (
-            <DangerIcon />
-          )}
-        </div>
-        {emailError && (
-          <p className="help is-danger" data-cy="ErrorMessage">
-            Email is required
-          </p>
-        )}
-      </div>
+      <Input
+        cy_attr="NameField"
+        id="comment-author-name"
+        label="Author Name"
+        name="name"
+        value={userName}
+        placeholder="Name Surname"
+        error={nameError}
+        onChange={handleChange}
+      />
+      <Input
+        cy_attr="EmailField"
+        id="comment-author-email"
+        label="Author Email"
+        name="email"
+        value={email}
+        placeholder="email@test.com"
+        error={emailError}
+        onChange={handleChange}
+      />
 
       <div className="field" data-cy="BodyField">
         <label className="label" htmlFor="comment-body">
           Comment Text
         </label>
-
         <div className="control">
           <textarea
             id="comment-body"
@@ -221,7 +174,6 @@ export const NewCommentForm: React.FC<Props> = (
             Enter some text
           </p>
         )}
-
       </div>
 
       <div className="field is-grouped">
